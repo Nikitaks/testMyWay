@@ -6,7 +6,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.value.ValueChangeMode;
@@ -28,15 +28,18 @@ public class MainView extends VerticalLayout {
     	        .getBean(CounterService.class);
     	Counter h2Counter = counterService.read();
     	
-        NumberField h2CounterField = new NumberField();
-        h2CounterField.setAllowedCharPattern("\\d");
+        TextField h2CounterField = new TextField();
+        h2CounterField.setPattern("-?\\d+");
         
     	Binder<Counter> binder = new Binder<>(Counter.class);
-    	binder.bind(h2CounterField, counter -> Double.valueOf(counter.getCount()), 
-    			(counter, intCounter) -> counter.setCount(intCounter.intValue()));
+    	binder.bind(h2CounterField, 
+    			counter -> String.valueOf(counter.getCount()), 
+    			(counter, newCounter) -> counter.setCount(Integer.parseInt(newCounter)));
     	
     	binder.readBean(h2Counter);
     	h2CounterField.addValueChangeListener(event -> {
+            if (h2CounterField.isEmpty())
+            	return;
             try {
             	binder.writeBean(h2Counter);
             	counterService.update(h2Counter);
